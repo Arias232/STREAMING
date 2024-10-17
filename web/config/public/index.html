@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Player - Live 🔴</title>
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.6.8/plyr.css" />
+    <style>
+        body {
+            background-color: #18181b; /* Fondo oscuro */
+            color: #ffffff; /* Texto blanco */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .featured-player-container {
+            width: 90%;
+            max-width: 1200px; /* Tamaño máximo del video destacado */
+            background-color: #202024; /* Fondo del contenedor */
+            border-radius: 10px; /* Bordes redondeados */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra */
+            padding: 20px;
+            margin-bottom: 20px; /* Espacio debajo del contenedor destacado */
+        }
+
+        .players-row {
+            display: flex; /* Mostrar los contenedores en una fila */
+            justify-content: center; /* Centrar los contenedores */
+            align-items: flex-start; /* Alinear en la parte superior */
+            gap: 20px; /* Espacio entre los contenedores */
+            width: 100%;
+            max-width: 1200px;
+            margin: 20px 0;
+        }
+
+        .player-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #202024; /* Fondo del contenedor */
+            border-radius: 10px; /* Bordes redondeados */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra */
+            padding: 20px;
+            flex: 1; /* Todos los contenedores tienen el mismo tamaño por defecto */
+        }
+
+        video {
+            width: 100%; /* Video ocupa el ancho completo del contenedor */
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .message {
+            color: #ffffff; /* Color del texto del mensaje */
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        h2 {
+            color: #9147ff; /* Color púrpura estilo Twitch */
+            margin-bottom: 10px;
+        }
+
+        .title {
+            margin-top: 20px;
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="title">Live Streaming - Twitch Style</h1>
+
+    <!-- Stream destacado (duplicado del Stream 1, más grande) -->
+    <div class="featured-player-container">
+        <h2>Featured Stream</h2>
+        <video id="featured-player" playsinline controls></video>
+        <p id="featured-message" class="message" style="display: none;">Regresa pronto...</p>
+    </div>
+    
+    <!-- Fila de 3 streams -->
+    <div class="players-row">
+        <!-- Stream 1 -->
+        <div class="player-container">
+            <h2>Stream 1</h2>
+            <video id="player1" playsinline controls></video>
+            <p id="message1" class="message" style="display: none;">Regresa pronto...</p>
+        </div>
+        
+        <!-- Stream 2 -->
+        <div class="player-container">
+            <h2>Stream 2</h2>
+            <video id="player2" playsinline controls></video>
+            <p id="message2" class="message" style="display: none;">Regresa pronto...</p>
+        </div>
+
+        <!-- Stream 3 -->
+        <div class="player-container">
+            <h2>Stream 3</h2>
+            <video id="player3" playsinline controls></video>
+            <p id="message3" class="message" style="display: none;">Regresa pronto...</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.rawgit.com/video-dev/hls.js/18bb552/dist/hls.min.js"></script>
+    <script src="https://cdn.plyr.io/3.6.8/plyr.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const setupPlayer = (id, source) => {
+                const video = document.querySelector(id);
+                const message = document.querySelector(id.replace('player', 'message'));
+
+                const player = new Plyr(video, {
+                    autoplay: true, 
+                    controls: ['play-large', 'play', 'mute', 'volume', 'settings', 'pip', 'airplay', 'fullscreen']
+                });
+
+                if (!Hls.isSupported()) {
+                    video.src = source;
+                    video.onloadeddata = () => { message.style.display = 'none'; };
+                    video.onerror = () => { message.style.display = 'block'; };
+                } else {
+                    const hls = new Hls();
+                    hls.loadSource(source);
+                    hls.attachMedia(video);
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        message.style.display = 'none';
+                    });
+                    hls.on(Hls.Events.ERROR, () => {
+                        message.style.display = 'block';
+                    });
+                    window[`hls_${id}`] = hls;
+                }
+
+                window[`player_${id}`] = player;
+            };
+
+            // Configuración de los reproductores
+            setupPlayer('#featured-player', 'https://practica.site/hls/stream.m3u8');
+            setupPlayer('#player1', 'https://practica.site/hls/stream.m3u8');
+            setupPlayer('#player2', 'https://practica.site/hls/stream1.m3u8');
+            setupPlayer('#player3', 'https://practica.site/hls/stream2.m3u8');
+        });
+    </script>
+</body>
+</html>
